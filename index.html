@@ -13,13 +13,11 @@
       font-family: 'Prompt', sans-serif;
       background-color: #f0f9ff;
     }
-
     header img {
       height: 100px;
       width: auto;
       margin: auto;
     }
-
     .tab-active {
       border-bottom: 2px solid #007aff;
       color: #007aff;
@@ -31,8 +29,8 @@
   <header class="bg-blue-100 text-center p-4">
     <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Seal_of_Ko_Samui.png" alt="โลโก้">
     <nav class="mt-4 flex justify-center space-x-6">
-      <button class="tab-active" onclick="showTab('reportTab')">รับแจ้งและรายงานผล</button>
-      <button onclick="showTab('statsTab')">สถิติ</button>
+      <button class="tab-active" onclick="showTab('reportTab', event)">รับแจ้งและรายงานผล</button>
+      <button onclick="showTab('statsTab', event)">สถิติ</button>
     </nav>
   </header>
 
@@ -89,6 +87,20 @@
 
     <!-- แท็บ สถิติ -->
     <div id="statsTab" class="hidden">
+      <div id="statsSummary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-blue-200 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold" id="totalCases">0</div>
+          <div>เรื่องร้องเรียนทั้งหมด</div>
+        </div>
+        <div class="bg-blue-100 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold" id="doneCases">0</div>
+          <div>ดำเนินการแล้ว</div>
+        </div>
+        <div class="bg-blue-50 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold" id="inProgressCases">0</div>
+          <div>อยู่ระหว่างดำเนินการ</div>
+        </div>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-white p-4 rounded-xl shadow">
           <h3 class="font-bold mb-2">จำนวนร้องเรียนรายเดือน</h3>
@@ -107,14 +119,84 @@
   </footer>
 
   <script>
-    function showTab(id) {
+    // --- สรุปสถิติและกราฟ dynamic ---
+    let monthlyChart, deptChart;
+
+    function showTab(id, event) {
       document.getElementById('reportTab').classList.add('hidden');
       document.getElementById('statsTab').classList.add('hidden');
       document.getElementById(id).classList.remove('hidden');
       document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
-      event.target.classList.add('tab-active');
+      if (event) event.target.classList.add('tab-active');
+      // โหลดสถิติและกราฟเมื่อเข้าหน้า "สถิติ"
+      if(id === 'statsTab') loadStatsAndCharts();
     }
 
+    // เรียกเมื่อเข้าแท็บ "สถิติ"
+    function loadStatsAndCharts() {
+      fetch("https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec?action=getAllComplaints")
+        .then(res => res.json())
+        .then(result => {
+          // ----- สรุปข้อมูล -----
+          const data = result.data || [];
+          document.getElementById("totalCases").textContent = data.length;
+          document.getElementById("doneCases").textContent = data.filter(r=>r.status==="ดำเนินการแล้ว").length;
+          document.getElementById("inProgressCases").textContent = data.filter(r=>r.status==="อยู่ระหว่างดำเนินการ").length;
+          
+          // ----- กราฟรายเดือน -----
+          const monthMap = {}; // { '2025-05': { all: 5, inProgress: 2 } }
+          data.forEach(r=>{
+            const d = new Date(r.timestamp);
+            const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            if(!monthMap[ym]) monthMap[ym] = {all:0, inProgress:0};
+            monthMap[ym].all++;
+            if(r.status==="อยู่ระหว่างดำเนินการ") monthMap[ym].inProgress++;
+          });
+          const months = Object.keys(monthMap).sort();
+          const allCases = months.map(m=>monthMap[m].all);
+          const inProgress = months.map(m=>monthMap[m].inProgress);
+
+          // สร้าง/อัปเดต Bar Chart
+          if(monthlyChart) monthlyChart.destroy();
+          monthlyChart = new Chart(document.getElementById('monthlyChart'), {
+            type: 'bar',
+            data: {
+              labels: months.map(m=>`${m.substr(5,2)}/${m.substr(0,4)}`),
+              datasets: [
+                { label: 'ร้องเรียนทั้งหมด', data: allCases, backgroundColor: '#60a5fa' },
+                { label: 'อยู่ระหว่างดำเนินการ', data: inProgress, backgroundColor: '#93c5fd' }
+              ]
+            },
+            options: { responsive: true, plugins: { legend: { position:'bottom' } } }
+          });
+
+          // ----- กราฟวงกลมฝ่าย -----
+          const deptMap = {};
+          data.forEach(r => {
+            deptMap[r.department] = (deptMap[r.department]||0) + 1;
+          });
+          const depts = Object.keys(deptMap);
+          const deptCounts = depts.map(d=>deptMap[d]);
+
+          // สร้าง/อัปเดต Doughnut Chart
+          if(deptChart) deptChart.destroy();
+          deptChart = new Chart(document.getElementById('deptChart'), {
+            type: 'doughnut',
+            data: {
+              labels: depts,
+              datasets: [{ data: deptCounts, backgroundColor: ['#60a5fa', '#93c5fd', '#bfdbfe', '#c7d2fe'] }]
+            },
+            options: { responsive: true, plugins: { legend: { position:'bottom' } } }
+          });
+        });
+    }
+
+    // default: โหลดสรุปสถิติครั้งแรก
+    window.onload = function() {
+      loadStatsAndCharts();
+    };
+
+    // --- Form Handler (คงเดิม) ---
     document.getElementById("complaintForm").addEventListener("submit", function (e) {
       e.preventDefault();
       const form = new FormData(e.target);
@@ -131,9 +213,9 @@
         .then(res => {
           document.getElementById("actionResult").textContent = res.success ? "บันทึกสำเร็จ" : "เกิดข้อผิดพลาด";
           if (res.success) e.target.reset();
+          loadStatsAndCharts(); // รีโหลดกราฟและสถิติ
         });
     });
   </script>
 </body>
-
 </html>

@@ -229,14 +229,16 @@
 
     // --- Modal สำหรับแก้ไข ---
     function openEditModal(id) {
-      const c = allComplaints.find(r => r.id === id);
-      if (!c) return alert("ไม่พบข้อมูลรายการนี้");
-      document.getElementById('editId').value = c.id;
-      document.getElementById('editStatus').value = c.status;
-      document.getElementById('editDetail').value = c.detail || '';
-      document.getElementById('editStaff').value = c.staff || '';
-      document.getElementById('editModal').classList.remove('hidden');
-    }
+  if (!id) return; // ป้องกัน modal เด้ง
+  const c = allComplaints.find(r => r.id === id);
+  if (!c) return alert("ไม่พบข้อมูลรายการนี้");
+  document.getElementById('editId').value = c.id;
+  document.getElementById('editStatus').value = c.status;
+  document.getElementById('editDetail').value = c.detail || '';
+  document.getElementById('editStaff').value = c.staff || '';
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
     function closeEditModal() {
       document.getElementById('editModal').classList.add('hidden');
     }

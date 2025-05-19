@@ -119,6 +119,41 @@
   </footer>
 
   <script>
+    let allComplaints = [];
+function renderComplaintTable() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+  const tbody = document.getElementById("complaintTable");
+  tbody.innerHTML = "";
+  const filtered = allComplaints.filter(r => {
+    const matchStatus = !status || r.status === status;
+    const text = [r.name, r.department, r.status].join(" ").toLowerCase();
+    const matchSearch = !search || text.includes(search);
+    return matchStatus && matchSearch;
+  });
+  filtered.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="p-2">${r.name}</td>
+      <td class="p-2">${r.department}</td>
+      <td class="p-2">${r.status}</td>
+      <td class="p-2 text-center">
+        <button onclick="alert('ดูรายละเอียดยังไม่รองรับ')" class="bg-blue-100 text-blue-600 px-2 rounded">ดู</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+function loadComplaints() {
+  fetch("https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec?action=getAllComplaints")
+    .then(res => res.json())
+    .then(result => {
+      allComplaints = result.data || [];
+      renderComplaintTable();
+    });
+}
+document.getElementById("searchInput").addEventListener("input", renderComplaintTable);
+document.getElementById("statusFilter").addEventListener("change", renderComplaintTable);
+
     // --- สรุปสถิติและกราฟ dynamic ---
     let monthlyChart, deptChart;
 

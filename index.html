@@ -202,13 +202,27 @@
     }
 
     function loadComplaints() {
-      fetch("https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec?action=getAllComplaints")
-        .then(res => res.json())
-        .then(result => {
-          allComplaints = result.data || [];
-          renderComplaintTable();
-        });
-    }
+  fetch("https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec?action=getAllComplaints")
+    .then(res => {
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.json();
+    })
+    .then(result => {
+      if (!result.success) {
+        alert("API ไม่ตอบกลับตามคาด กรุณาตรวจสอบ Server");
+        allComplaints = [];
+      } else {
+        allComplaints = result.data || [];
+      }
+      renderComplaintTable();
+    })
+    .catch(err => {
+      alert("โหลดข้อมูลไม่สำเร็จ: " + err.message);
+      allComplaints = [];
+      renderComplaintTable();
+    });
+}
+
 
     document.getElementById("searchInput").addEventListener("input", renderComplaintTable);
     document.getElementById("statusFilter").addEventListener("change", renderComplaintTable);

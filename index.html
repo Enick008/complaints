@@ -44,6 +44,7 @@
   </header>
 
   <main class="flex-1 p-4">
+    <div id="errorMsg"></div>
     <!-- แท็บ รับแจ้ง -->
     <div id="reportTab">
       <form id="complaintForm" class="bg-white rounded-xl p-4 shadow mb-6">
@@ -229,14 +230,13 @@ function showError(msg) {
   if (!div) {
     div = document.createElement("div");
     div.id = "errorMsg";
-    div.className = "text-red-600 p-2 mb-2";
+    div.className = "text-red-600 bg-red-50 p-2 mb-2 rounded";
     document.querySelector("main").prepend(div);
   }
   div.textContent = msg || "";
+  div.style.display = msg ? "" : "none";
+  if (msg) window.scrollTo({top:0, behavior:"smooth"});
 }
-
-
-
     document.getElementById("searchInput").addEventListener("input", renderComplaintTable);
     document.getElementById("statusFilter").addEventListener("change", renderComplaintTable);
 

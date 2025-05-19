@@ -176,31 +176,33 @@
 
     // ---- ตารางร้องเรียน ค้นหา ฟิลเตอร์ แก้ไข ลบ ----
     function renderComplaintTable() {
-      const search = document.getElementById("searchInput").value.toLowerCase();
-      const status = document.getElementById("statusFilter").value;
-      const tbody = document.getElementById("complaintTable");
-      tbody.innerHTML = "";
-      const filtered = allComplaints.filter(r => {
-        const matchStatus = !status || r.status === status;
-        const text = [r.name, r.department, r.status, r.id].join(" ").toLowerCase();
-        const matchSearch = !search || text.includes(search);
-        return matchStatus && matchSearch;
-      });
-      filtered.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="p-2">${r.name}</td>
-          <td class="p-2">${r.department}</td>
-          <td class="p-2">${r.status}</td>
-          <td class="p-2">${r.finishedDate ? new Date(r.finishedDate).toLocaleString('th-TH') : '-'}</td>
-          <td class="p-2">${r.id || '-'}</td>
-          <td class="p-2 flex gap-1 justify-center">
-            <button onclick="openEditModal('${r.id}')" class="bg-yellow-100 text-yellow-800 px-2 rounded">แก้ไข</button>
-            <button onclick="deleteComplaint('${r.id}')" class="bg-red-100 text-red-600 px-2 rounded">ลบ</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-    }
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+  const tbody = document.getElementById("complaintTable");
+  tbody.innerHTML = "";
+  const filtered = allComplaints.filter(r => {
+    const matchStatus = !status || r.status === status;
+    const text = [r.name, r.department, r.status, r.id].join(" ").toLowerCase();
+    const matchSearch = !search || text.includes(search);
+    return matchStatus && matchSearch;
+  });
+  filtered.forEach(r => {
+  if (!r.id) return; // <-- เพิ่มบรรทัดนี้!
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td class="p-2">${r.name}</td>
+    <td class="p-2">${r.department}</td>
+    <td class="p-2">${r.status}</td>
+    <td class="p-2">${r.finishedDate ? new Date(r.finishedDate).toLocaleString('th-TH') : '-'}</td>
+    <td class="p-2">${r.id || '-'}</td>
+    <td class="p-2 flex gap-1 justify-center">
+      <button onclick="openEditModal('${r.id}')" class="bg-yellow-100 text-yellow-800 px-2 rounded">แก้ไข</button>
+      <button onclick="deleteComplaint('${r.id}')" class="bg-red-100 text-red-600 px-2 rounded">ลบ</button>
+    </td>`;
+  tbody.appendChild(tr);
+});
+
+
 
     function loadComplaints() {
   fetch("https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec?action=getAllComplaints")
@@ -242,9 +244,13 @@ function showError(msg) {
 
     // --- Modal สำหรับแก้ไข ---
     function openEditModal(id) {
-  if (!id) return; // ป้องกัน modal เด้ง
+  if (!id) return; // ถ้าไม่มี id ไม่เปิด modal
   const c = allComplaints.find(r => r.id === id);
-  if (!c) return alert("ไม่พบข้อมูลรายการนี้");
+  if (!c) {
+    showError("ไม่พบข้อมูลรายการนี้");
+    return;
+  }
+  // ตั้งค่า input form
   document.getElementById('editId').value = c.id;
   document.getElementById('editStatus').value = c.status;
   document.getElementById('editDetail').value = c.detail || '';

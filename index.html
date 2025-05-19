@@ -209,19 +209,32 @@
     })
     .then(result => {
       if (!result.success) {
-        alert("API ไม่ตอบกลับตามคาด กรุณาตรวจสอบ Server");
+        showError("API ไม่ตอบกลับ กรุณาตรวจสอบ Server");
         allComplaints = [];
       } else {
         allComplaints = result.data || [];
+        showError("");
       }
       renderComplaintTable();
     })
     .catch(err => {
-      alert("โหลดข้อมูลไม่สำเร็จ: " + err.message);
+      showError("โหลดข้อมูลไม่สำเร็จ: " + err.message);
       allComplaints = [];
       renderComplaintTable();
     });
 }
+
+function showError(msg) {
+  let div = document.getElementById("errorMsg");
+  if (!div) {
+    div = document.createElement("div");
+    div.id = "errorMsg";
+    div.className = "text-red-600 p-2 mb-2";
+    document.querySelector("main").prepend(div);
+  }
+  div.textContent = msg || "";
+}
+
 
 
     document.getElementById("searchInput").addEventListener("input", renderComplaintTable);

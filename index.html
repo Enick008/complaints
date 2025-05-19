@@ -202,15 +202,16 @@
   tbody.appendChild(tr);
 });
 
-
-
-    function loadComplaints() {
+ function loadComplaints() {
   fetch("https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec?action=getAllComplaints")
-    .then(res => {
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    })
-    .then(result => {
+    .then(res => res.text())
+    .then(txt => {
+      let result = {};
+      try {
+        result = JSON.parse(txt);
+      } catch(e) {
+        throw new Error("API ไม่ได้คืนข้อมูล JSON ที่ถูกต้อง");
+      }
       if (!result.success) {
         showError("API ไม่ตอบกลับ กรุณาตรวจสอบ Server");
         allComplaints = [];
@@ -226,6 +227,7 @@
       renderComplaintTable();
     });
 }
+
 
 function showError(msg) {
   let div = document.getElementById("errorMsg");
@@ -243,7 +245,7 @@ function showError(msg) {
     document.getElementById("statusFilter").addEventListener("change", renderComplaintTable);
 
     // --- Modal สำหรับแก้ไข ---
-    function openEditModal(id) {
+  function openEditModal(id) {
   if (!id) return; // ถ้าไม่มี id ไม่เปิด modal
   const c = allComplaints.find(r => r.id === id);
   if (!c) {

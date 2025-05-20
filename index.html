@@ -1,160 +1,156 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการเรื่องร้องเรียน</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f0f9ff; }
-        header img { height: 100px; width: auto; margin: auto; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบจัดการเรื่องร้องเรียน</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Prompt', sans-serif; }
+    .hidden { display: none; }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col">
-    <header class="bg-blue-100 text-center p-4">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Seal_of_Ko_Samui.png" alt="โลโก้">
-        <h1 class="text-xl font-bold mt-2">ระบบจัดการเรื่องร้องเรียน</h1>
-    </header>
-
-    <main class="flex-1 p-4">
-        <form id="complaintForm" class="bg-white rounded-xl p-4 shadow mb-6">
-            <h2 class="text-xl font-bold mb-4">ฟอร์มรับเรื่องร้องเรียน</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" placeholder="ชื่อ" name="name" required class="border p-2 rounded">
-                <input type="text" placeholder="ที่อยู่" name="address" required class="border p-2 rounded">
-                <select name="subdistrict" required class="border p-2 rounded">
-                    <option>แม่น้ำ</option><option>บ่อผุด</option><option>มะเร็ต</option>
-                    <option>หน้าเมือง</option><option>ลิปะน้อย</option><option>ตลิ่งงาม</option><option>อ่างทอง</option>
-                </select>
-                <input type="tel" placeholder="เบอร์โทรศัพท์" name="phone" class="border p-2 rounded">
-                <select name="department" required class="border p-2 rounded">
-                    <option>งานบริหารทั่วไป</option>
-                    <option>ฝ่ายปรับปรุงคุณภาพน้ำ</option>
-                    <option>ฝ่ายจัดการสิ่งแวดล้อมด้านวัสดุใช้แล้ว</option>
-                </select>
-                <input type="text" placeholder="ผู้รับผิดชอบ" name="staff" class="border p-2 rounded">
-                <select name="status" required class="border p-2 rounded">
-                    <option>อยู่ระหว่างดำเนินการ</option>
-                    <option>ดำเนินการแล้ว</option>
-                </select>
-            </div>
-            <textarea name="detail" rows="3" placeholder="รายละเอียดเรื่องร้องเรียน" class="w-full border p-2 rounded mt-4"></textarea>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 mt-4 rounded hover:bg-blue-600">บันทึก</button>
-        </form>
-
-        <div class="overflow-x-auto">
-            <table class="w-full bg-white rounded-xl shadow overflow-hidden text-sm">
-                <thead class="bg-blue-200">
-                    <tr>
-                        <th class="p-2">ชื่อ</th>
-                        <th class="p-2">ฝ่าย</th>
-                        <th class="p-2">สถานะ</th>
-                        <th class="p-2">วันที่ดำเนินการ</th>
-                        <th class="p-2">ID</th>
-                        <th class="p-2">จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="complaintTable"></tbody>
-            </table>
+<body class="bg-blue-50 p-4">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h1 class="text-2xl font-bold text-blue-700 mb-4">📋 รับเรื่องร้องเรียน</h1>
+    <form id="complaintForm">
+      <input type="hidden" id="complaintId" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><label>วันที่รับเรื่อง</label><input type="date" id="dateReceived" class="w-full border rounded p-2" /></div>
+        <div><label>เลขลงรับ</label><input type="text" id="refNumber" class="w-full border rounded p-2" /></div>
+        <div><label>ชื่อ</label><input type="text" id="name" class="w-full border rounded p-2" /></div>
+        <div><label>ที่อยู่</label><textarea id="address" class="w-full border rounded p-2"></textarea></div>
+        <div><label>ตำบล</label>
+          <select id="subdistrict" class="w-full border rounded p-2">
+            <option>อ่างทอง</option><option>ลิปะน้อย</option><option>ตลิ่งงาม</option>
+            <option>หน้าเมือง</option><option>แม่น้ำ</option><option>บ่อผุด</option><option>มะเร็ต</option>
+          </select>
         </div>
-    </main>
+        <div><label>เบอร์โทร</label><input type="tel" id="phone" class="w-full border rounded p-2" /></div>
+        <div><label>ฝ่ายรับผิดชอบ</label>
+          <select id="department" class="w-full border rounded p-2">
+            <option>งานบริหารทั่วไป</option>
+            <option>ฝ่ายปรับปรุงคุณภาพน้ำ</option>
+            <option>ฝ่ายจัดการสิ่งแวดล้อมด้านวัสดุใช้แล้ว</option>
+          </select>
+        </div>
+        <div><label>สถานะ</label>
+          <select id="status" class="w-full border rounded p-2" onchange="toggleCompletionFields()">
+            <option>อยู่ระหว่างดำเนินการ</option>
+            <option>ดำเนินการแล้ว</option>
+          </select>
+        </div>
+        <div><label>ผู้รับผิดชอบ</label><input type="text" id="responsiblePerson" class="w-full border rounded p-2" /></div>
+      </div>
 
-    <footer class="bg-blue-100 text-center text-sm text-blue-800 p-4">
-        ©2025 ระบบบริหารจัดการงานกองช่างสุขาภิบาล โดย นายธีรศักดิ์ พูลเขาล้าน
-    </footer>
+      <div id="completionFields" class="mt-4 hidden">
+        <label>วันที่ดำเนินการ</label><input type="date" id="completedDate" class="w-full border rounded p-2 mb-2" />
+        <label>รายละเอียดการแก้ไข</label><textarea id="resolutionDetails" class="w-full border rounded p-2"></textarea>
+      </div>
 
-    <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec";
+      <label class="block mt-4">รายละเอียดเรื่องร้องเรียน</label>
+      <textarea id="complaintDetails" class="w-full border rounded p-2 mb-4"></textarea>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">📩 บันทึก</button>
+    </form>
+  </div>
 
-        document.getElementById("complaintForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            const form = new FormData(e.target);
-            const data = {};
-            form.forEach((v, k) => data[k] = v);
-            data.action = "addComplaint";
+  <div class="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow-md mt-6">
+    <h2 class="text-xl font-bold text-blue-700 mb-4">📌 รายการร้องเรียนที่อยู่ระหว่างดำเนินการ</h2>
+    <input type="text" id="searchInput" placeholder="🔍 ค้นหาเลขลงรับหรือชื่อ..." class="w-full border rounded p-2 mb-4" oninput="renderTable()" />
+    <div class="overflow-x-auto">
+      <table class="table-auto w-full text-sm border">
+        <thead class="bg-blue-100">
+          <tr><th class="border p-2">เลขรับ</th><th class="border p-2">ชื่อ</th><th class="border p-2">ฝ่าย</th><th class="border p-2">สถานะ</th><th class="border p-2">แก้ไข</th></tr>
+        </thead>
+        <tbody id="complaintTable"></tbody>
+      </table>
+    </div>
+  </div>
 
-            fetch(GAS_URL, {
-                method: "POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    e.target.reset();
-                    Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', confirmButtonText: 'ตกลง' });
-                    loadComplaints();
-                } else {
-                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: res.message || 'ไม่สามารถบันทึกข้อมูลได้' });
-                }
-            })
-            .catch(err => {
-                Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: err.message });
-            });
+  <script>
+    const endpoint = 'https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec';
+    let allComplaints = [];
+
+    document.getElementById("dateReceived").valueAsDate = new Date();
+    document.getElementById("complaintForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const payload = {
+        action: "addComplaint",
+        data: {
+          dateReceived: dateReceived.value,
+          refNumber: refNumber.value,
+          name: name.value,
+          address: address.value,
+          subdistrict: subdistrict.value,
+          phone: phone.value,
+          department: department.value,
+          status: status.value,
+          completedDate: completedDate.value,
+          resolutionDetails: resolutionDetails.value,
+          responsiblePerson: responsiblePerson.value,
+          complaintDetails: complaintDetails.value,
+        }
+      };
+      await fetch(endpoint, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      alert("📌 บันทึกเรียบร้อย");
+      loadComplaints();
+      complaintForm.reset();
+    });
+
+    function toggleCompletionFields() {
+      document.getElementById("completionFields").classList.toggle("hidden", status.value !== "ดำเนินการแล้ว");
+    }
+
+    async function loadComplaints() {
+      const res = await fetch(endpoint + '?action=getComplaints');
+      const json = await res.json();
+      allComplaints = json.data || [];
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("complaintTable");
+      const filter = document.getElementById("searchInput").value.toLowerCase();
+      tbody.innerHTML = "";
+      allComplaints.filter(c => c.status === "อยู่ระหว่างดำเนินการ" &&
+        (c.refNumber.toLowerCase().includes(filter) || c.name.toLowerCase().includes(filter)))
+        .forEach(c => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td class='border p-2'>${c.refNumber}</td>
+            <td class='border p-2'>${c.name}</td>
+            <td class='border p-2'>${c.department}</td>
+            <td class='border p-2'>${c.status}</td>
+            <td class='border p-2 text-center'><button onclick='editStatus("${c.id}")' class='text-blue-600 underline'>แก้ไข</button></td>`;
+          tbody.appendChild(tr);
         });
+    }
 
-        function loadComplaints() {
-            fetch(`${GAS_URL}?action=getAllComplaints`)
-                .then(res => res.json())
-                .then(res => {
-                    if (!res.success) return;
-                    const tbody = document.getElementById("complaintTable");
-                    tbody.innerHTML = "";
-                    res.data.forEach(r => {
-                        const tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td class="p-2">${r.name}</td>
-                            <td class="p-2">${r.department}</td>
-                            <td class="p-2">${r.status}</td>
-                            <td class="p-2">${r.finishedDate ? new Date(r.finishedDate).toLocaleDateString('th-TH') : '-'}</td>
-                            <td class="p-2">${r.id}</td>
-                            <td class="p-2 flex gap-1 justify-center">
-                                <button onclick="editComplaint('${r.id}')" class="bg-yellow-100 text-yellow-800 px-2 rounded">แก้ไข</button>
-                                <button onclick="deleteComplaint('${r.id}')" class="bg-red-100 text-red-600 px-2 rounded">ลบ</button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                });
-        }
+    async function editStatus(id) {
+      const statusUpdate = prompt("พิมพ์สถานะใหม่ (เช่น ดำเนินการแล้ว)");
+      if (!statusUpdate) return;
+      const completedDate = statusUpdate === "ดำเนินการแล้ว" ? prompt("📅 วันที่ดำเนินการ (yyyy-mm-dd)") : "";
+      const resolutionDetails = statusUpdate === "ดำเนินการแล้ว" ? prompt("📝 รายละเอียดการแก้ไข") : "";
 
-        function deleteComplaint(id) {
-            Swal.fire({
-                title: 'ยืนยันการลบ?',
-                text: "คุณต้องการลบรายการนี้หรือไม่",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'ลบ',
-                cancelButtonText: 'ยกเลิก'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(GAS_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: "deleteComplaint", id })
-                    })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.success) {
-                            Swal.fire('ลบแล้ว!', '', 'success');
-                            loadComplaints();
-                        } else {
-                            Swal.fire('เกิดข้อผิดพลาด', res.message, 'error');
-                        }
-                    });
-                }
-            });
-        }
+      const payload = {
+        action: "updateStatus",
+        id,
+        status: statusUpdate,
+        completedDate,
+        resolutionDetails
+      };
+      await fetch(endpoint, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      alert("✅ อัปเดตสถานะแล้ว");
+      loadComplaints();
+    }
 
-        function editComplaint(id) {
-            Swal.fire('ฟีเจอร์แก้ไขยังไม่เปิดใช้งาน', `ID: ${id}`, 'info');
-        }
-
-        window.onload = loadComplaints;
-    </script>
+    loadComplaints();
+  </script>
 </body>
 </html>

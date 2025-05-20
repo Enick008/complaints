@@ -2,171 +2,135 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบจัดการเรื่องร้องเรียน</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Prompt', sans-serif; }
-    header img { height: 100px; width: auto; margin: 0 auto; }
-    footer { background-color: #fee2e2; color: #991b1b; text-align: center; padding: 1rem; font-size: 0.875rem; }
+    header img { height: 100px; width: auto; }
   </style>
 </head>
 <body class="bg-red-50">
-  <header class="bg-white shadow-md py-4 flex justify-center">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Seal_of_Ko_Samui.png" alt="Ko Samui Seal" />
+  <header class="bg-white py-4 shadow-md flex justify-center">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Seal_of_Ko_Samui.png" alt="Seal of Ko Samui">
   </header>
 
-  <main class="max-w-4xl mx-auto bg-white rounded-xl shadow-md mt-6 p-6">
-    <div class="mb-6">
-      <button onclick="showTab('form')" class="px-4 py-2 bg-red-600 text-white rounded">ฟอร์ม</button>
-      <button onclick="showTab('stats')" class="px-4 py-2 bg-red-600 text-white rounded">สถิติ</button>
+  <main class="max-w-5xl mx-auto p-4">
+    <div class="tabs flex border-b mb-4">
+      <button class="tab px-4 py-2 font-bold text-red-700 border-b-4 border-red-700" onclick="switchTab('formTab')">รับเรื่องร้องเรียน</button>
+      <button class="tab px-4 py-2" onclick="switchTab('statsTab')">สถิติ</button>
     </div>
 
-    <div id="formTab">
-      <h1 class="text-xl font-bold text-red-700 mb-4">📋 แบบฟอร์มรับเรื่องร้องเรียน</h1>
-      <form id="complaintForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input type="hidden" id="complaintId" />
-        <div><label>วันที่รับเรื่อง</label><input type="date" id="dateReceived" class="w-full border rounded p-2" /></div>
-        <div><label>เลขรับเรื่อง</label><input type="text" id="registerNo" class="w-full border rounded p-2" /></div>
-        <div><label>ชื่อ</label><input type="text" id="name" class="w-full border rounded p-2" /></div>
-        <div><label>ที่อยู่</label><input type="text" id="address" class="w-full border rounded p-2" /></div>
-        <div>
-          <label>ตำบล</label>
-          <select id="subdistrict" class="w-full border rounded p-2">
-            <option>แม่น้ำ</option><option>บ่อผุด</option><option>มะเร็ต</option>
-            <option>ลิปะน้อย</option><option>ตลิ่งงาม</option><option>หน้าเมือง</option><option>อ่างทอง</option>
-          </select>
+    <section id="formTab">
+      <form id="complaintForm" class="bg-white p-6 rounded-lg shadow-md">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><label>วันที่รับเรื่อง</label><input type="date" id="date" class="w-full border p-2 rounded" required></div>
+          <div><label>เลขลงรับ</label><input type="text" id="refNo" class="w-full border p-2 rounded" required></div>
+          <div><label>ชื่อ</label><input type="text" id="name" class="w-full border p-2 rounded" required></div>
+          <div><label>ที่อยู่</label><input type="text" id="address" class="w-full border p-2 rounded"></div>
+          <div>
+            <label>ตำบล</label>
+            <select id="subdistrict" class="w-full border p-2 rounded">
+              <option>อ่างทอง</option><option>ลิปะน้อย</option><option>ตลิ่งงาม</option>
+              <option>แม่น้ำ</option><option>บ่อผุด</option><option>มะเร็ต</option><option>หน้าเมือง</option>
+            </select>
+          </div>
+          <div><label>เบอร์โทร</label><input type="tel" id="phone" class="w-full border p-2 rounded"></div>
+          <div>
+            <label>ฝ่ายรับผิดชอบ</label>
+            <select id="department" class="w-full border p-2 rounded">
+              <option>งานบริหารทั่วไป</option><option>ฝ่ายปรับปรุงคุณภาพน้ำ</option><option>ฝ่ายจัดการสิ่งแวดล้อมด้านวัสดุใช้แล้ว</option>
+            </select>
+          </div>
+          <div>
+            <label>สถานะ</label>
+            <select id="status" class="w-full border p-2 rounded">
+              <option>อยู่ระหว่างดำเนินการ</option><option>ดำเนินการแล้ว</option>
+            </select>
+          </div>
+          <div><label>ผู้รับผิดชอบ</label><input type="text" id="assignee" class="w-full border p-2 rounded"></div>
+          <div class="md:col-span-2">
+            <label>รายละเอียดเรื่องร้องเรียน</label>
+            <textarea id="details" class="w-full border p-2 rounded" rows="3"></textarea>
+          </div>
+          <div id="completedSection" class="md:col-span-2 hidden">
+            <label>วันที่ดำเนินการ</label>
+            <input type="date" id="completeDate" class="w-full border p-2 rounded">
+            <label>รายละเอียดการดำเนินการ</label>
+            <textarea id="resolution" class="w-full border p-2 rounded" rows="2"></textarea>
+          </div>
         </div>
-        <div><label>เบอร์โทร</label><input type="text" id="phone" class="w-full border rounded p-2" /></div>
-        <div>
-          <label>ฝ่ายรับผิดชอบ</label>
-          <select id="department" class="w-full border rounded p-2">
-            <option>งานบริหารทั่วไป</option>
-            <option>ฝ่ายปรับปรุงคุณภาพน้ำ</option>
-            <option>ฝ่ายจัดการสิ่งแวดล้อมด้านวัสดุใช้แล้ว</option>
-          </select>
-        </div>
-        <div>
-          <label>สถานะ</label>
-          <select id="status" class="w-full border rounded p-2">
-            <option>อยู่ระหว่างดำเนินการ</option>
-            <option>ดำเนินการแล้ว</option>
-          </select>
-        </div>
-        <div><label>ผู้รับผิดชอบ</label><input type="text" id="responsiblePerson" class="w-full border rounded p-2" /></div>
-        <div class="md:col-span-2">
-          <label>รายละเอียด</label>
-          <textarea id="details" rows="3" class="w-full border rounded p-2"></textarea>
-        </div>
-        <div class="md:col-span-2" id="completeSection" style="display:none">
-          <label>วันที่ดำเนินการแล้วเสร็จ</label>
-          <input type="date" id="completeDate" class="w-full border rounded p-2" />
-          <label>รายละเอียดการดำเนินการ</label>
-          <textarea id="completeDetails" rows="2" class="w-full border rounded p-2"></textarea>
-        </div>
-        <div class="md:col-span-2 text-right">
-          <button type="button" onclick="submitComplaint()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">บันทึกข้อมูล</button>
+        <div class="mt-4 text-right">
+          <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">บันทึก</button>
         </div>
       </form>
-    </div>
+    </section>
 
-    <div id="statsTab" style="display:none">
-      <h2 class="text-xl font-bold text-red-700 mb-4">📊 สถิติการร้องเรียน</h2>
-      <canvas id="statusChart" class="mb-6"></canvas>
-      <canvas id="deptChart"></canvas>
-    </div>
+    <section id="statsTab" class="hidden">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold mb-4">📊 สถิติเรื่องร้องเรียน</h2>
+        <canvas id="complaintChart" height="120"></canvas>
+      </div>
+    </section>
   </main>
 
-  <footer>
+  <footer class="text-center bg-red-100 py-4 mt-6 text-sm text-red-800">
     ©2025 ระบบจัดการเรื่องร้องเรียน กองช่างสุขาภิบาล โดย นายธีรศักดิ์ พูลเขาล้าน
   </footer>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec';
 
-    function showTab(tab) {
-      document.getElementById('formTab').style.display = tab === 'form' ? 'block' : 'none';
-      document.getElementById('statsTab').style.display = tab === 'stats' ? 'block' : 'none';
-      if (tab === 'stats') fetchStatistics();
+    document.getElementById('status').addEventListener('change', function () {
+      document.getElementById('completedSection').classList.toggle('hidden', this.value !== 'ดำเนินการแล้ว');
+    });
+
+    function switchTab(tabId) {
+      document.getElementById('formTab').classList.add('hidden');
+      document.getElementById('statsTab').classList.add('hidden');
+      document.getElementById(tabId).classList.remove('hidden');
     }
 
-    function submitComplaint() {
-      Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+    document.getElementById('complaintForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
       const data = {
-        dateReceived: document.getElementById('dateReceived').value,
-        registerNo: document.getElementById('registerNo').value,
+        date: document.getElementById('date').value,
+        refNo: document.getElementById('refNo').value,
         name: document.getElementById('name').value,
         address: document.getElementById('address').value,
         subdistrict: document.getElementById('subdistrict').value,
         phone: document.getElementById('phone').value,
         department: document.getElementById('department').value,
         status: document.getElementById('status').value,
-        responsiblePerson: document.getElementById('responsiblePerson').value,
+        assignee: document.getElementById('assignee').value,
         details: document.getElementById('details').value,
         completeDate: document.getElementById('completeDate').value,
-        completeDetails: document.getElementById('completeDetails').value,
-        action: 'addComplaint'
+        resolution: document.getElementById('resolution').value
       };
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } })
-        .then(res => res.json())
-        .then(result => {
-          if (result.success) {
-            Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!' });
-            document.getElementById('complaintForm').reset();
-          } else throw new Error(result.message);
-        })
-        .catch(err => Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message }));
-    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('dateReceived').valueAsDate = new Date();
-      document.getElementById('status').addEventListener('change', (e) => {
-        document.getElementById('completeSection').style.display = e.target.value === 'ดำเนินการแล้ว' ? 'block' : 'none';
-      });
+      try {
+        Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        const res = await fetch(scriptURL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'addComplaint', data })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          Swal.fire('สำเร็จ!', 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+          document.getElementById('complaintForm').reset();
+        } else {
+          throw new Error(result.message);
+        }
+      } catch (error) {
+        Swal.fire('ผิดพลาด', error.message, 'error');
+      }
     });
-
-    function fetchStatistics() {
-      fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'getStatistics' }),
-        headers: { 'Content-Type': 'application/json' }
-      })
-        .then(res => res.json())
-        .then(result => {
-          if (!result.success) throw new Error('ไม่สามารถดึงข้อมูลได้');
-          renderCharts(result.stats);
-        })
-        .catch(err => Swal.fire({ icon: 'error', title: 'โหลดข้อมูลล้มเหลว', text: err.message }));
-    }
-
-    function renderCharts(stats) {
-      const statusCtx = document.getElementById('statusChart').getContext('2d');
-      new Chart(statusCtx, {
-        type: 'bar',
-        data: {
-          labels: Object.keys(stats.byStatus),
-          datasets: [{
-            label: 'จำนวนเรื่องร้องเรียนตามสถานะ',
-            data: Object.values(stats.byStatus),
-          }]
-        }
-      });
-
-      const deptCtx = document.getElementById('deptChart').getContext('2d');
-      new Chart(deptCtx, {
-        type: 'pie',
-        data: {
-          labels: Object.keys(stats.byDepartment),
-          datasets: [{
-            label: 'จำนวนตามฝ่ายรับผิดชอบ',
-            data: Object.values(stats.byDepartment),
-          }]
-        }
-      });
-    }
   </script>
 </body>
 </html>

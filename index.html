@@ -72,17 +72,19 @@
         document.getElementById("complaintForm").addEventListener("submit", function(e) {
             e.preventDefault();
             const form = new FormData(e.target);
-            form.append("action", "addComplaint");
-
-            fetch(GAS_URL, {
+            const data = {};
+            form.forEach((v, k) => data[k] = v);
+            fetch(`${GAS_URL}?action=addComplaint`, {
                 method: "POST",
-                body: form
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             })
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
                     e.target.reset();
                     Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', confirmButtonText: 'ตกลง' });
+                    loadComplaints();
                 } else {
                     Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: res.message || 'ไม่สามารถบันทึกข้อมูลได้' });
                 }
@@ -91,6 +93,67 @@
                 Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: err.message });
             });
         });
+
+        function loadComplaints() {
+            fetch(`${GAS_URL}?action=getAllComplaints`)
+                .then(res => res.json())
+                .then(res => {
+                    if (!res.success) return;
+                    const tbody = document.getElementById("complaintTable");
+                    tbody.innerHTML = "";
+                    res.data.forEach(r => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td class="p-2">${r.name}</td>
+                            <td class="p-2">${r.department}</td>
+                            <td class="p-2">${r.status}</td>
+                            <td class="p-2">${r.finishedDate ? new Date(r.finishedDate).toLocaleDateString('th-TH') : '-'}</td>
+                            <td class="p-2">${r.id}</td>
+                            <td class="p-2 flex gap-1 justify-center">
+                                <button onclick="editComplaint('${r.id}')" class="bg-yellow-100 text-yellow-800 px-2 rounded">แก้ไข</button>
+                                <button onclick="deleteComplaint('${r.id}')" class="bg-red-100 text-red-600 px-2 rounded">ลบ</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        function deleteComplaint(id) {
+            Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: "คุณต้องการลบรายการนี้หรือไม่",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`${GAS_URL}?action=deleteComplaint`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.success) {
+                            Swal.fire('ลบแล้ว!', '', 'success');
+                            loadComplaints();
+                        } else {
+                            Swal.fire('เกิดข้อผิดพลาด', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function editComplaint(id) {
+            Swal.fire('ฟีเจอร์แก้ไขยังไม่เปิดใช้งาน', `ID: ${id}`, 'info');
+        }
+
+        window.onload = loadComplaints;
     </script>
 </body>
 </html>

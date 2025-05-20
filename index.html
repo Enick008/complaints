@@ -73,10 +73,12 @@
             const form = new FormData(e.target);
             const data = {};
             form.forEach((v, k) => data[k] = v);
-            fetch(`${GAS_URL}?action=addComplaint`, {
+            const payload = { action: "addComplaint", ...data };
+
+            fetch(GAS_URL, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             })
             .then(res => res.json())
             .then(res => {
@@ -130,10 +132,10 @@
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`${GAS_URL}?action=deleteComplaint`, {
+                    fetch(GAS_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id })
+                        body: JSON.stringify({ action: "deleteComplaint", id })
                     })
                     .then(res => res.json())
                     .then(res => {

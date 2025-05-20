@@ -11,7 +11,6 @@
         body { font-family: 'Prompt', sans-serif; background-color: #f0f9ff; }
         header img { height: 100px; width: auto; margin: auto; }
         .tab-active { border-bottom: 2px solid #007aff; color: #007aff; }
-        .modal-bg { background: rgba(0,0,0,0.3); position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 50; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -21,7 +20,6 @@
     </header>
 
     <main class="flex-1 p-4">
-        <div id="errorMsg"></div>
         <form id="complaintForm" class="bg-white rounded-xl p-4 shadow mb-6">
             <h2 class="text-xl font-bold mb-4">ฟอร์มรับเรื่องร้องเรียน</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -44,7 +42,6 @@
                 </select>
             </div>
             <textarea name="detail" rows="3" placeholder="รายละเอียดเรื่องร้องเรียน" class="w-full border p-2 rounded mt-4"></textarea>
-            <div id="actionResult" class="text-sm mt-2"></div>
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 mt-4 rounded hover:bg-blue-600">บันทึก</button>
         </form>
 
@@ -75,12 +72,11 @@
         document.getElementById("complaintForm").addEventListener("submit", function(e) {
             e.preventDefault();
             const form = new FormData(e.target);
-            const data = {};
-            form.forEach((v, k) => data[k] = v);
-            fetch(`${GAS_URL}?action=addComplaint`, {
+            form.append("action", "addComplaint");
+
+            fetch(GAS_URL, {
                 method: "POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: form
             })
             .then(res => res.json())
             .then(res => {
@@ -88,7 +84,7 @@
                     e.target.reset();
                     Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', confirmButtonText: 'ตกลง' });
                 } else {
-                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถบันทึกข้อมูลได้' });
+                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: res.message || 'ไม่สามารถบันทึกข้อมูลได้' });
                 }
             })
             .catch(err => {

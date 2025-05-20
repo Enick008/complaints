@@ -1,135 +1,617 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจัดการเรื่องร้องเรียน</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <base target="_top">
+  <title>ระบบจัดการเรื่องร้องเรียน กองช่างสุขาภิบาล</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Prompt', sans-serif; }
-    header img { height: 100px; width: auto; }
+    /* Global Styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    /* Header Styles */
+    header {
+      background-color: #dc3545; /* Red tone */
+      padding: 10px 0;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    header img {
+      height: 100px;
+      width: auto; /* Maintain aspect ratio */
+      display: block; /* Center image */
+      margin: 0 auto;
+    }
+
+    /* Tab System */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background-color: #eee;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .tab-button {
+      padding: 15px 25px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #555;
+      border: none;
+      background: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .tab-button.active {
+      background-color: #fff;
+      color: #dc3545;
+      border-bottom: 3px solid #dc3545;
+    }
+
+    .tab-button:hover:not(.active) {
+      background-color: #e0e0e0;
+    }
+
+    .tab-content {
+      padding: 20px;
+      background-color: #fff;
+      margin: 0 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .tab-content.hidden {
+      display: none;
+    }
+
+    /* Form Styles (iOS-like) */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="date"],
+    .form-group select,
+    .form-group textarea {
+      width: calc(100% - 20px);
+      padding: 12px 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px; /* iOS-like rounded corners */
+      font-size: 16px;
+      box-sizing: border-box; /* Include padding in width */
+      -webkit-appearance: none; /* Remove default styling for select */
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    .form-group textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group input[type="date"]:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #007aff; /* iOS blue focus */
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    }
+
+    .button-primary {
+      background-color: #007aff; /* iOS blue */
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
+      transition: background-color 0.3s ease;
+    }
+
+    .button-primary:hover {
+      background-color: #005bb5;
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+
+    .status-pending { color: #dc3545; font-weight: bold; } /* Red for pending */
+    .status-completed { color: #28a745; font-weight: bold; } /* Green for completed */
+
+    .action-buttons button {
+        background-color: #007aff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 5px;
+    }
+
+    .action-buttons button:hover {
+        opacity: 0.8;
+    }
+
+    /* Footer Styles */
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 30px;
+      color: #777;
+      font-size: 14px;
+    }
   </style>
 </head>
-<body class="bg-red-50">
-  <header class="bg-white py-4 shadow-md flex justify-center">
+<body>
+  <header>
     <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Seal_of_Ko_Samui.png" alt="Seal of Ko Samui">
   </header>
 
-  <main class="max-w-5xl mx-auto p-4">
-    <div class="tabs flex border-b mb-4">
-      <button class="tab px-4 py-2 font-bold text-red-700 border-b-4 border-red-700" onclick="switchTab('formTab')">รับเรื่องร้องเรียน</button>
-      <button class="tab px-4 py-2" onclick="switchTab('statsTab')">สถิติ</button>
-    </div>
+  <div class="tabs">
+    <button class="tab-button active" onclick="openTab(event, 'newComplaint')">รับเรื่องร้องเรียน</button>
+    <button class="tab-button" onclick="openTab(event, 'statistics')">สถิติ</button>
+  </div>
 
-    <section id="formTab">
-      <form id="complaintForm" class="bg-white p-6 rounded-lg shadow-md">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><label>วันที่รับเรื่อง</label><input type="date" id="date" class="w-full border p-2 rounded" required></div>
-          <div><label>เลขลงรับ</label><input type="text" id="refNo" class="w-full border p-2 rounded" required></div>
-          <div><label>ชื่อ</label><input type="text" id="name" class="w-full border p-2 rounded" required></div>
-          <div><label>ที่อยู่</label><input type="text" id="address" class="w-full border p-2 rounded"></div>
-          <div>
-            <label>ตำบล</label>
-            <select id="subdistrict" class="w-full border p-2 rounded">
-              <option>อ่างทอง</option><option>ลิปะน้อย</option><option>ตลิ่งงาม</option>
-              <option>แม่น้ำ</option><option>บ่อผุด</option><option>มะเร็ต</option><option>หน้าเมือง</option>
-            </select>
-          </div>
-          <div><label>เบอร์โทร</label><input type="tel" id="phone" class="w-full border p-2 rounded"></div>
-          <div>
-            <label>ฝ่ายรับผิดชอบ</label>
-            <select id="department" class="w-full border p-2 rounded">
-              <option>งานบริหารทั่วไป</option><option>ฝ่ายปรับปรุงคุณภาพน้ำ</option><option>ฝ่ายจัดการสิ่งแวดล้อมด้านวัสดุใช้แล้ว</option>
-            </select>
-          </div>
-          <div>
-            <label>สถานะ</label>
-            <select id="status" class="w-full border p-2 rounded">
-              <option>อยู่ระหว่างดำเนินการ</option><option>ดำเนินการแล้ว</option>
-            </select>
-          </div>
-          <div><label>ผู้รับผิดชอบ</label><input type="text" id="assignee" class="w-full border p-2 rounded"></div>
-          <div class="md:col-span-2">
-            <label>รายละเอียดเรื่องร้องเรียน</label>
-            <textarea id="details" class="w-full border p-2 rounded" rows="3"></textarea>
-          </div>
-          <div id="completedSection" class="md:col-span-2 hidden">
-            <label>วันที่ดำเนินการ</label>
-            <input type="date" id="completeDate" class="w-full border p-2 rounded">
-            <label>รายละเอียดการดำเนินการ</label>
-            <textarea id="resolution" class="w-full border p-2 rounded" rows="2"></textarea>
-          </div>
-        </div>
-        <div class="mt-4 text-right">
-          <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">บันทึก</button>
-        </div>
-      </form>
-    </section>
-
-    <section id="statsTab" class="hidden">
-      <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-bold mb-4">📊 สถิติเรื่องร้องเรียน</h2>
-        <canvas id="complaintChart" height="120"></canvas>
+  <div id="newComplaint" class="tab-content">
+    <h3>รับเรื่องร้องเรียนใหม่</h3>
+    <form id="complaintForm">
+      <div class="form-group">
+        <label for="receiptDate">วันที่รับเรื่อง:</label>
+        <input type="date" id="receiptDate" name="receiptDate" value="<?= new Date().toISOString().slice(0, 10); ?>" required>
       </div>
-    </section>
-  </main>
+      <div class="form-group">
+        <label for="receiptNumber">เลขลงรับ:</label>
+        <input type="text" id="receiptNumber" name="receiptNumber" placeholder="เลขลงรับ" required>
+      </div>
+      <div class="form-group">
+        <label for="name">ชื่อ:</label>
+        <input type="text" id="name" name="name" placeholder="ชื่อผู้แจ้ง" required>
+      </div>
+      <div class="form-group">
+        <label for="address">ที่อยู่:</label>
+        <input type="text" id="address" name="address" placeholder="ที่อยู่" required>
+      </div>
+      <div class="form-group">
+        <label for="tambon">ตำบล:</label>
+        <select id="tambon" name="tambon" required>
+          <option value="">เลือกตำบล</option>
+          <option value="อ่างทอง">อ่างทอง</option>
+          <option value="ตลิ่งงาม">ตลิ่งงาม</option>
+          <option value="บ่อผุด">บ่อผุด</option>
+          <option value="มะเร็ต">มะเร็ต</option>
+          <option value="หน้าเมือง">หน้าเมือง</option>
+          <option value="แม่น้ำ">แม่น้ำ</option>
+          <option value="เกาะพะงัน">เกาะพะงัน</option> </select>
+      </div>
+      <div class="form-group">
+        <label for="phone">เบอร์โทร:</label>
+        <input type="text" id="phone" name="phone" placeholder="เบอร์โทรศัพท์" required>
+      </div>
+      <div class="form-group">
+        <label for="responsibleDept">ฝ่ายรับผิดชอบ:</label>
+        <select id="responsibleDept" name="responsibleDept" required>
+          <option value="">เลือกฝ่าย</option>
+          <option value="งานบริหารทั่วไป">งานบริหารทั่วไป</option>
+          <option value="ฝ่ายปรับปรุงคุณภาพน้ำ">ฝ่ายปรับปรุงคุณภาพน้ำ</option>
+          <option value="ฝ่ายจัดการสิ่งแวดล้อมด้านวัสดุใช้แล้ว">ฝ่ายจัดการสิ่งแวดล้อมด้านวัสดุใช้แล้ว</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="status">สถานะ:</label>
+        <select id="status" name="status" required>
+          <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
+          <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
+        </select>
+      </div>
+      <div class="form-group" id="completionDateGroup" style="display: none;">
+        <label for="completionDate">วันที่ดำเนินการ:</label>
+        <input type="date" id="completionDate" name="completionDate">
+      </div>
+      <div class="form-group" id="completionDetailGroup" style="display: none;">
+        <label for="completionDetail">รายละเอียดการแก้ไข:</label>
+        <textarea id="completionDetail" name="completionDetail" placeholder="รายละเอียดการแก้ไข"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="responsiblePerson">ผู้รับผิดชอบ:</label>
+        <input type="text" id="responsiblePerson" name="responsiblePerson" placeholder="ผู้รับผิดชอบ" required>
+      </div>
+      <div class="form-group">
+        <label for="details">รายละเอียดเรื่องร้องเรียน:</label>
+        <textarea id="details" name="details" placeholder="รายละเอียดของเรื่องร้องเรียน" required></textarea>
+      </div>
+      <button type="submit" class="button-primary">บันทึกเรื่องร้องเรียน</button>
+    </form>
 
-  <footer class="text-center bg-red-100 py-4 mt-6 text-sm text-red-800">
-    ©2025 ระบบจัดการเรื่องร้องเรียน กองช่างสุขาภิบาล โดย นายธีรศักดิ์ พูลเขาล้าน
+    <hr>
+
+    <h3>รายการเรื่องร้องเรียนที่อยู่ระหว่างดำเนินการ</h3>
+    <div class="form-group">
+        <label for="searchId">ค้นหาด้วย ID:</label>
+        <input type="text" id="searchId" name="searchId" placeholder="ID เรื่องร้องเรียน">
+        <button class="button-primary" style="width: auto; margin-top: 10px;" onclick="searchAndEditComplaint()">ค้นหาและแก้ไข</button>
+    </div>
+    <div id="searchResult" style="margin-top: 20px;">
+        </div>
+    <table id="pendingComplaintsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>วันที่รับเรื่อง</th>
+          <th>เลขลงรับ</th>
+          <th>ชื่อผู้แจ้ง</th>
+          <th>ตำบล</th>
+          <th>ฝ่ายรับผิดชอบ</th>
+          <th>สถานะ</th>
+          <th>ผู้รับผิดชอบ</th>
+          <th>ดำเนินการ</th>
+        </tr>
+      </thead>
+      <tbody>
+        </tbody>
+    </table>
+  </div>
+
+  <div id="statistics" class="tab-content hidden">
+    <h3>สถิติเรื่องร้องเรียน</h3>
+    <div id="statsSummary">
+        </div>
+    <div id="chartContainer" style="width: 100%; height: 400px; margin-top: 20px;">
+        </div>
+  </div>
+
+  <footer>
+    <p>©2025 ระบบจัดการเรื่องร้องเรียน กองช่างสุขาภิบาล โดย นายธีรศักดิ์ พูลเขาล้าน</p>
   </footer>
 
   <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbw4LM0Ig-Pr1VhiheafQfX3hu8rzwWZhPUXa1n17oO7rq6OQJ6WTjcoOsyrCVLdRww/exec';
+    // JavaScript for Tab functionality
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tab-content");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.add("hidden");
+      }
+      tablinks = document.getElementsByClassName("tab-button");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(tabName).classList.remove("hidden");
+      evt.currentTarget.className += " active";
 
-    document.getElementById('status').addEventListener('change', function () {
-      document.getElementById('completedSection').classList.toggle('hidden', this.value !== 'ดำเนินการแล้ว');
-    });
-
-    function switchTab(tabId) {
-      document.getElementById('formTab').classList.add('hidden');
-      document.getElementById('statsTab').classList.add('hidden');
-      document.getElementById(tabId).classList.remove('hidden');
+      // Load data/charts when tab is opened
+      if (tabName === 'newComplaint') {
+          loadPendingComplaints();
+      } else if (tabName === 'statistics') {
+          loadStatisticsAndCharts();
+      }
     }
 
-    document.getElementById('complaintForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+    // Handle status change for "ดำเนินการแล้ว"
+    document.getElementById('status').addEventListener('change', function() {
+        var status = this.value;
+        var completionDateGroup = document.getElementById('completionDateGroup');
+        var completionDetailGroup = document.getElementById('completionDetailGroup');
+        if (status === 'ดำเนินการแล้ว') {
+            completionDateGroup.style.display = 'block';
+            completionDetailGroup.style.display = 'block';
+            document.getElementById('completionDate').setAttribute('required', 'required');
+            document.getElementById('completionDetail').setAttribute('required', 'required');
+        } else {
+            completionDateGroup.style.display = 'none';
+            completionDetailGroup.style.display = 'none';
+            document.getElementById('completionDate').removeAttribute('required');
+            document.getElementById('completionDetail').removeAttribute('required');
+        }
+    });
 
-      const data = {
-        date: document.getElementById('date').value,
-        refNo: document.getElementById('refNo').value,
+    // Form Submission
+    document.getElementById('complaintForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        text: 'โปรดรอสักครู่',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        }
+      });
+
+      const formData = {
+        receiptDate: document.getElementById('receiptDate').value,
+        receiptNumber: document.getElementById('receiptNumber').value,
         name: document.getElementById('name').value,
         address: document.getElementById('address').value,
-        subdistrict: document.getElementById('subdistrict').value,
+        tambon: document.getElementById('tambon').value,
         phone: document.getElementById('phone').value,
-        department: document.getElementById('department').value,
+        responsibleDept: document.getElementById('responsibleDept').value,
         status: document.getElementById('status').value,
-        assignee: document.getElementById('assignee').value,
-        details: document.getElementById('details').value,
-        completeDate: document.getElementById('completeDate').value,
-        resolution: document.getElementById('resolution').value
+        completionDate: document.getElementById('completionDate').value,
+        completionDetail: document.getElementById('completionDetail').value,
+        responsiblePerson: document.getElementById('responsiblePerson').value,
+        details: document.getElementById('details').value
       };
 
-      try {
-        Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      google.script.run
+        .withSuccessHandler(function(response) {
+          Swal.fire({
+            icon: response.status === 'success' ? 'success' : 'error',
+            title: response.message,
+            showConfirmButton: false,
+            timer: 2000
+          });
+          if (response.status === 'success') {
+            document.getElementById('complaintForm').reset();
+            document.getElementById('receiptDate').value = new Date().toISOString().slice(0, 10); // Reset date to current
+            loadPendingComplaints(); // Reload pending complaints table
+          }
+        })
+        .withFailureHandler(function(error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: error.message || 'ไม่สามารถบันทึกข้อมูลได้',
+            showConfirmButton: true
+          });
+        })
+        .addComplaint(formData);
+    });
 
-        const res = await fetch(scriptURL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'addComplaint', data })
+    // Load Pending Complaints
+    function loadPendingComplaints() {
+      google.script.run
+        .withSuccessHandler(function(data) {
+          const tableBody = document.querySelector('#pendingComplaintsTable tbody');
+          tableBody.innerHTML = ''; // Clear existing rows
+          data.forEach(function(row) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${row.ID}</td>
+              <td>${row['วันที่รับเรื่อง']}</td>
+              <td>${row['เลขลงรับ']}</td>
+              <td>${row['ชื่อ']}</td>
+              <td>${row['ตำบล']}</td>
+              <td>${row['ฝ่ายรับผิดชอบ']}</td>
+              <td class="${row['สถานะ'] === 'อยู่ระหว่างดำเนินการ' ? 'status-pending' : 'status-completed'}">${row['สถานะ']}</td>
+              <td>${row['ผู้รับผิดชอบ']}</td>
+              <td class="action-buttons">
+                <button onclick="editComplaint('${row.ID}')">แก้ไข</button>
+              </td>
+            `;
+            tableBody.appendChild(tr);
+          });
+        })
+        .withFailureHandler(function(error) {
+          console.error("Error loading pending complaints:", error);
+          Swal.fire('Error', 'ไม่สามารถโหลดรายการเรื่องร้องเรียนได้', 'error');
+        })
+        .getPendingComplaints();
+    }
+
+    // Search and Edit Complaint
+    function searchAndEditComplaint() {
+        const complaintId = document.getElementById('searchId').value;
+        if (!complaintId) {
+            Swal.fire('แจ้งเตือน', 'กรุณาระบุ ID เรื่องร้องเรียนที่ต้องการค้นหา', 'warning');
+            return;
+        }
+
+        Swal.fire({
+            title: 'กำลังค้นหา...',
+            text: 'โปรดรอสักครู่',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
         });
 
-        const result = await res.json();
-        if (result.success) {
-          Swal.fire('สำเร็จ!', 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
-          document.getElementById('complaintForm').reset();
+        google.script.run
+            .withSuccessHandler(function(data) {
+                Swal.close();
+                const searchResultDiv = document.getElementById('searchResult');
+                if (data) {
+                    searchResultDiv.innerHTML = `
+                        <h4>ข้อมูลเรื่องร้องเรียน ID: ${data.ID}</h4>
+                        <p><strong>วันที่รับเรื่อง:</strong> ${data['วันที่รับเรื่อง']}</p>
+                        <p><strong>เลขลงรับ:</strong> ${data['เลขลงรับ']}</p>
+                        <p><strong>ชื่อ:</strong> ${data['ชื่อ']}</p>
+                        <p><strong>ตำบล:</strong> ${data['ตำบล']}</p>
+                        <p><strong>ฝ่ายรับผิดชอบ:</strong> ${data['ฝ่ายรับผิดชอบ']}</p>
+                        <p><strong>สถานะปัจจุบัน:</strong> <span class="${data['สถานะ'] === 'อยู่ระหว่างดำเนินการ' ? 'status-pending' : 'status-completed'}">${data['สถานะ']}</span></p>
+                        <p><strong>ผู้รับผิดชอบ:</strong> ${data['ผู้รับผิดชอบ']}</p>
+                        <p><strong>รายละเอียด:</strong> ${data['รายละเอียดเรื่องร้องเรียน']}</p>
+                        ${data['สถานะ'] === 'ดำเนินการแล้ว' ? `<p><strong>วันที่ดำเนินการ:</strong> ${data['วันที่ดำเนินการ']}</p><p><strong>รายละเอียดการแก้ไข:</strong> ${data['รายละเอียดการแก้ไข']}</p>` : ''}
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="editStatus">เปลี่ยนสถานะเป็น:</label>
+                            <select id="editStatus" name="editStatus" onchange="toggleEditCompletionFields(this.value)">
+                                <option value="อยู่ระหว่างดำเนินการ" ${data['สถานะ'] === 'อยู่ระหว่างดำเนินการ' ? 'selected' : ''}>อยู่ระหว่างดำเนินการ</option>
+                                <option value="ดำเนินการแล้ว" ${data['สถานะ'] === 'ดำเนินการแล้ว' ? 'selected' : ''}>ดำเนินการแล้ว</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="editCompletionDateGroup" style="${data['สถานะ'] === 'ดำเนินการแล้ว' ? 'display: block;' : 'display: none;'}">
+                            <label for="editCompletionDate">วันที่ดำเนินการ:</label>
+                            <input type="date" id="editCompletionDate" value="${data['วันที่ดำเนินการ'] || ''}">
+                        </div>
+                        <div class="form-group" id="editCompletionDetailGroup" style="${data['สถานะ'] === 'ดำเนินการแล้ว' ? 'display: block;' : 'display: none;'}">
+                            <label for="editCompletionDetail">รายละเอียดการแก้ไข:</label>
+                            <textarea id="editCompletionDetail">${data['รายละเอียดการแก้ไข'] || ''}</textarea>
+                        </div>
+                        <button class="button-primary" style="width: auto; margin-top: 10px;" onclick="updateComplaintStatus('${data.ID}')">บันทึกการแก้ไขสถานะ</button>
+                    `;
+                } else {
+                    searchResultDiv.innerHTML = `<p>ไม่พบข้อมูลเรื่องร้องเรียน ID: ${complaintId}</p>`;
+                }
+            })
+            .withFailureHandler(function(error) {
+                Swal.fire('Error', 'เกิดข้อผิดพลาดในการค้นหา: ' + error.message, 'error');
+            })
+            .getComplaintById(complaintId);
+    }
+
+    function toggleEditCompletionFields(status) {
+        var completionDateGroup = document.getElementById('editCompletionDateGroup');
+        var completionDetailGroup = document.getElementById('editCompletionDetailGroup');
+        if (status === 'ดำเนินการแล้ว') {
+            completionDateGroup.style.display = 'block';
+            completionDetailGroup.style.display = 'block';
         } else {
-          throw new Error(result.message);
+            completionDateGroup.style.display = 'none';
+            completionDetailGroup.style.display = 'none';
         }
-      } catch (error) {
-        Swal.fire('ผิดพลาด', error.message, 'error');
-      }
+    }
+
+    function updateComplaintStatus(id) {
+        const newStatus = document.getElementById('editStatus').value;
+        const completionDate = document.getElementById('editCompletionDate').value;
+        const completionDetail = document.getElementById('editCompletionDetail').value;
+
+        if (newStatus === 'ดำเนินการแล้ว' && (!completionDate || !completionDetail)) {
+            Swal.fire('แจ้งเตือน', 'กรุณาระบุวันที่ดำเนินการและรายละเอียดการแก้ไขเมื่อเปลี่ยนสถานะเป็น "ดำเนินการแล้ว"', 'warning');
+            return;
+        }
+
+        Swal.fire({
+            title: 'กำลังอัปเดตสถานะ...',
+            text: 'โปรดรอสักครู่',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
+        });
+
+        google.script.run
+            .withSuccessHandler(function(response) {
+                Swal.fire({
+                    icon: response.status === 'success' ? 'success' : 'error',
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                if (response.status === 'success') {
+                    document.getElementById('searchResult').innerHTML = ''; // Clear search result
+                    document.getElementById('searchId').value = ''; // Clear search ID
+                    loadPendingComplaints(); // Reload pending complaints table
+                }
+            })
+            .withFailureHandler(function(error) {
+                Swal.fire('Error', 'เกิดข้อผิดพลาดในการอัปเดตสถานะ: ' + error.message, 'error');
+            })
+            .updateComplaintStatus(id, newStatus, completionDate, completionDetail);
+    }
+
+    function editComplaint(id) {
+        document.getElementById('searchId').value = id;
+        searchAndEditComplaint();
+    }
+
+
+    // Load Google Charts for Statistics Tab
+    google.charts.load('current', {'packages':['corechart']});
+
+    function loadStatisticsAndCharts() {
+        google.script.run
+            .withSuccessHandler(function(data) {
+                const summaryDiv = document.getElementById('statsSummary');
+                summaryDiv.innerHTML = `
+                    <p>จำนวนเรื่องร้องเรียนทั้งหมด: <strong>${data.totalComplaints}</strong></p>
+                    <p>อยู่ระหว่างดำเนินการ: <strong>${data.pendingComplaints}</strong></p>
+                    <p>ดำเนินการแล้ว: <strong>${data.completedComplaints}</strong></p>
+                `;
+
+                // Draw charts
+                drawDeptChart(data.deptStats);
+                drawTambonChart(data.tambonStats);
+
+            })
+            .withFailureHandler(function(error) {
+                Swal.fire('Error', 'ไม่สามารถโหลดข้อมูลสถิติได้: ' + error.message, 'error');
+            })
+            .getStatistics();
+    }
+
+    function drawDeptChart(deptStats) {
+        const data = new google.visualization.DataTable();
+        data.addColumn('string', 'ฝ่ายรับผิดชอบ');
+        data.addColumn('number', 'จำนวนเรื่อง');
+        Object.keys(deptStats).forEach(dept => {
+            data.addRow([dept, deptStats[dept]]);
+        });
+
+        const options = {
+            title: 'สถิติเรื่องร้องเรียนตามฝ่ายรับผิดชอบ',
+            is3D: true,
+            colors: ['#dc3545', '#ffc107', '#28a745', '#007bff'], // Custom colors
+            chartArea: {left:0,top:30,width:'90%',height:'70%'}
+        };
+
+        const chart = new google.visualization.PieChart(document.getElementById('chartContainer'));
+        chart.draw(data, options);
+    }
+
+    function drawTambonChart(tambonStats) {
+        const data = new google.visualization.DataTable();
+        data.addColumn('string', 'ตำบล');
+        data.addColumn('number', 'จำนวนเรื่อง');
+        Object.keys(tambonStats).forEach(tambon => {
+            data.addRow([tambon, tambonStats[tambon]]);
+        });
+
+        const options = {
+            title: 'สถิติเรื่องร้องเรียนตามตำบล',
+            is3D: true,
+            colors: ['#6f42c1', '#fd7e14', '#20c997', '#0dcaf0', '#e83e8c', '#6610f2', '#f44336'], // More custom colors
+            chartArea: {left:0,top:30,width:'90%',height:'70%'}
+        };
+
+        // Create a new div for this chart if you want multiple charts
+        let chartContainer = document.getElementById('chartContainer');
+        let tambonChartDiv = document.createElement('div');
+        tambonChartDiv.id = 'tambonChartDiv';
+        tambonChartDiv.style.width = '100%';
+        tambonChartDiv.style.height = '400px';
+        chartContainer.appendChild(tambonChartDiv);
+
+        const chart = new google.visualization.PieChart(tambonChartDiv);
+        chart.draw(data, options);
+    }
+
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set current date for receiptDate
+      document.getElementById('receiptDate').value = new Date().toISOString().slice(0, 10);
+      loadPendingComplaints(); // Load pending complaints on initial page load
     });
   </script>
 </body>

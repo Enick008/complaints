@@ -73,12 +73,12 @@
             const form = new FormData(e.target);
             const data = {};
             form.forEach((v, k) => data[k] = v);
-            const payload = { action: "addComplaint", ...data };
+            data.action = "addComplaint";
 
             fetch(GAS_URL, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(data)
             })
             .then(res => res.json())
             .then(res => {

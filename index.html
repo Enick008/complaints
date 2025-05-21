@@ -118,35 +118,41 @@
     const SHEET_ID = '1XtPNnfrpqFv57lhOI0JGw4eNpnotIj89pIGn7JDYR4g';
 
     document.getElementById("complaintForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const data = {
-        action: "addComplaint",
-        sheetId: SHEET_ID,
-        callback: "handleResponse",
-        receiveDate: document.getElementById("date").value,
-        registrationNumber: document.getElementById("regNumber").value,
-        name: document.getElementById("name").value,
-        phone: document.getElementById("phone").value,
-        address: document.getElementById("address").value,
-        district: document.getElementById("subdistrict").value,
-        department: document.getElementById("department").value,
-        status: document.getElementById("status").value,
-        responsible: document.getElementById("assignee").value,
-        details: document.getElementById("detail").value
-      };
+  e.preventDefault();
 
-      Swal.fire({
-        title: 'กำลังบันทึก...',
-        didOpen: () => Swal.showLoading(),
-        allowOutsideClick: false,
-        showConfirmButton: false
-      });
+  const isEdit = document.getElementById("complaintId").value !== "";
 
-      const query = new URLSearchParams(data).toString();
-      const script = document.createElement('script');
-      script.src = `${API_URL}?${query}`;
-      document.body.appendChild(script);
-    });
+  const data = {
+    action: isEdit ? "updateComplaint" : "addComplaint",
+    sheetId: SHEET_ID,
+    callback: "handleResponse",
+    id: document.getElementById("complaintId").value,
+    receiveDate: document.getElementById("date").value,
+    registrationNumber: document.getElementById("regNumber").value,
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    address: document.getElementById("address").value,
+    district: document.getElementById("subdistrict").value,
+    department: document.getElementById("department").value,
+    status: document.getElementById("status").value,
+    responsible: document.getElementById("assignee").value,
+    details: document.getElementById("detail").value,
+    completionDate: document.getElementById("completionDate")?.value || "",
+    completionDetails: document.getElementById("completionDetails")?.value || ""
+  };
+
+  Swal.fire({
+    title: 'กำลังบันทึก...',
+    didOpen: () => Swal.showLoading(),
+    allowOutsideClick: false,
+    showConfirmButton: false
+  });
+
+  const query = new URLSearchParams(data).toString();
+  const script = document.createElement('script');
+  script.src = `${API_URL}?${query}`;
+  document.body.appendChild(script);
+});
 
     function handleResponse(response) {
       Swal.close();

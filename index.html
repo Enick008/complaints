@@ -159,37 +159,128 @@
       }
     }
 
-    function loadComplaints() {
-      const query = `action=getComplaints&sheetId=${SHEET_ID}&callback=renderComplaints`;
+   function renderComplaints(response) {
+  const table = document.getElementById("complaintTable");
+  table.innerHTML = "";
+  window._allComplaints = response.data || [];
+
+  if (response.success && Array.isArray(response.data)) {
+    response.data.forEach(c => {
+      const row = `<tr>
+        <td class="border p-1">${c.receiveDate}</td>
+        <td class="border p-1">${c.registrationNumber}</td>
+        <td class="border p-1">${c.name}</td>
+        <td class="border p-1">${c.address}</td>
+        <td class="border p-1">${c.district}</td>
+        <td class="border p-1">${c.phone}</td>
+        <td class="border p-1">${c.department}</td>
+        <td class="border p-1">${c.status}</td>
+        <td class="border p-1">${c.responsible}</td>
+        <td class="border p-1">${c.details}</td>
+        <td class="border p-1 text-center">
+          <button onclick="editComplaint('${c.id}')" class="text-blue-600">✏️</button>
+          <button onclick="deleteComplaint('${c.id}')" class="text-red-600 ml-1">🗑</button>
+        </td>
+      </tr>`;
+      table.innerHTML += row;
+    });
+  }
+}
+
+function editComplaint(id) {
+  const c = window._allComplaints.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById("complaintId").value = c.id;
+  document.getElementById("date").value = c.receiveDate;
+  document.getElementById("regNumber").value = c.registrationNumber;
+  document.getElementById("name").value = c.name;
+  document.getElementById("phone").value = c.phone;
+  document.getElementById("address").value = c.address;
+  document.getElementById("subdistrict").value = c.district;
+  document.getElementById("department").value = c.department;
+  document.getElementById("status").value = c.status;
+  document.getElementById("assignee").value = c.responsible;
+  document.getElementById("detail").value = c.details;
+}
+
+function deleteComplaint(id) {
+  Swal.fire({
+    title: 'ลบรายการ?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'ลบ',
+    cancelButtonText: 'ยกเลิก'
+  }).then(result => {
+    if (result.isConfirmed) {
+      const query = `action=deleteComplaint&id=${id}&sheetId=${SHEET_ID}&callback=handleResponse`;
       const script = document.createElement('script');
       script.src = `${API_URL}?${query}`;
       document.body.appendChild(script);
     }
+  });
+}
 
-    function renderComplaints(response) {
-      const table = document.getElementById("complaintTable");
-      table.innerHTML = "";
-      if (response.success && Array.isArray(response.data)) {
-        response.data.forEach(c => {
-          const row = `<tr>
-            <td class="border p-1">${c.receiveDate}</td>
-            <td class="border p-1">${c.registrationNumber}</td>
-            <td class="border p-1">${c.name}</td>
-            <td class="border p-1">${c.address}</td>
-            <td class="border p-1">${c.district}</td>
-            <td class="border p-1">${c.phone}</td>
-            <td class="border p-1">${c.department}</td>
-            <td class="border p-1">${c.status}</td>
-            <td class="border p-1">${c.responsible}</td>
-            <td class="border p-1">${c.details}</td>
-            <td class="border p-1 text-center">🔧 ✏️ 🗑</td>
-          </tr>`;
-          table.innerHTML += row;
-        });
-      }
+function searchComplaints() {
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+  const filtered = window._allComplaints.filter(c =>
+    c.registrationNumber.toLowerCase().includes(keyword) ||
+    c.name.toLowerCase().includes(keyword) ||
+    c.district.toLowerCase().includes(keyword) ||
+    c.status.toLowerCase().includes(keyword)
+  );
+  renderComplaints({ success: true, data: filtered });
+}
+
+function filterStatus(status) {
+  if (status === 'ทั้งหมด') {
+    renderComplaints({ success: true, data: window._allComplaints });
+  } else {
+    const filtered = window._allComplaints.filter(c => c.status === status);
+    renderComplaints({ success: true, data: filtered });
+  }
+}
+
+// โหลดกราฟ
+function loadStatistics() {
+  const query = `action=getStatistics&sheetId=${SHEET_ID}&callback=renderStatistics`;
+  const script = document.createElement('script');
+  script.src = `${API_URL}?${query}`;
+  document.body.appendChild(script);
+}
+
+function renderStatistics(response) {
+  if (!response.success) return;
+  const ctx1 = document.getElementById('totalStatsChart').getContext('2d');
+  const ctx2 = document.getElementById('monthlyStatsChart').getContext('2d');
+
+  new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: ['ดำเนินการแล้ว', 'อยู่ระหว่างดำเนินการ'],
+      datasets: [{
+        data: [response.done, response.pending],
+        backgroundColor: ['#16a34a', '#facc15']
+      }]
     }
+  });
 
-    window.onload = loadComplaints;
-  </script>
+  new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: response.months,
+      datasets: [{
+        label: 'จำนวนเรื่องร้องเรียน',
+        data: response.monthCounts,
+        backgroundColor: '#2563eb'
+      }]
+    }
+  });
+}
+
+window.onload = () => {
+  loadComplaints();
+  loadStatistics();
+};
+</script>
 </body>
 </html>

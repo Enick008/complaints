@@ -158,7 +158,12 @@
         Swal.fire('เกิดข้อผิดพลาด', response.error || 'ไม่สามารถบันทึกข้อมูลได้', 'error');
       }
     }
-
+function loadComplaints() {
+  const query = `action=getComplaints&sheetId=${SHEET_ID}&callback=renderComplaints`;
+  const script = document.createElement('script');
+  script.src = `${API_URL}?${query}`;
+  document.body.appendChild(script);
+}
    function renderComplaints(response) {
   const table = document.getElementById("complaintTable");
   table.innerHTML = "";

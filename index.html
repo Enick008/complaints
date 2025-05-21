@@ -202,15 +202,27 @@ function editComplaint(id) {
   document.getElementById("assignee").value = c.responsible;
   document.getElementById("detail").value = c.details;
 
+  // ลบช่อง completion เดิมก่อนเพิ่มใหม่
+  const existing = document.getElementById("completionFields");
+  if (existing) existing.remove();
+
   if (c.status === 'ดำเนินการแล้ว') {
-    if (!document.getElementById("completionDate")) {
-      const extraFields = document.createElement("div");
-      extraFields.id = "completionFields";
-      extraFields.classList.add("md:col-span-2", "grid", "grid-cols-1", "md:grid-cols-2", "gap-4", "mt-2");
-      extraFields.innerHTML = `
-        <div>
-          <label>วันที่ดำเนินการ</label>
-          <input type="date" id="completionDate" class="w-full border rounded p-2" value="${c.completionDate || ''}" />
+    const extraFields = document.createElement("div");
+    extraFields.id = "completionFields";
+    extraFields.classList.add("md:col-span-2", "grid", "grid-cols-1", "md:grid-cols-2", "gap-4", "mt-2");
+    extraFields.innerHTML = `
+      <div>
+        <label>วันที่ดำเนินการ</label>
+        <input type="date" id="completionDate" class="w-full border rounded p-2" value="${c.completionDate || ''}" />
+      </div>
+      <div>
+        <label>รายละเอียดการดำเนินการ</label>
+        <textarea id="completionDetails" class="w-full border rounded p-2" rows="2">${c.completionDetails || ''}</textarea>
+      </div>
+    `;
+    document.getElementById("complaintForm").appendChild(extraFields);
+  }
+}" />
         </div>
         <div>
           <label>รายละเอียดการดำเนินการ</label>
@@ -221,6 +233,7 @@ function editComplaint(id) {
     }
   }
 }
+
 
 function deleteComplaint(id) {
   Swal.fire({

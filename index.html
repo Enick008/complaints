@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการงานกองช่างสุขาภิบาล</title>
+    <title>ระบบจัดการเรื่องร้องเรียน กองช่างสุขาภิบาล</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -11,19 +11,30 @@
     <header>
         <div class="header-content">
             <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Seal_of_Ko_Samui.png" alt="Seal of Ko Samui" class="header-logo">
-            <h1>ระบบบริหารจัดการงานกองช่างสุขาภิบาล</h1>
+            <h1>ระบบจัดการเรื่องร้องเรียน กองช่างสุขาภิบาล</h1>
         </div>
         <nav class="tabs">
-            <button class="tab-button active" data-tab="receive-report">รับแจ้งและรายงานผล</button>
+            <button class="tab-button active" data-tab="complaint-management">รับเรื่องร้องเรียนและจัดการรายการ</button>
             <button class="tab-button" data-tab="statistics">สถิติ</button>
         </nav>
     </header>
 
     <main>
-        <div id="receive-report" class="tab-content active">
+        <div id="complaint-management" class="tab-content active">
             <section class="form-section card">
-                <h2>แบบฟอร์มรับแจ้งเรื่องร้องเรียน</h2>
+                <h2>แบบฟอร์มรับเรื่องร้องเรียน</h2>
                 <form id="complaint-form">
+                    <input type="hidden" id="form-mode" value="add">
+                    <input type="hidden" id="edit-id">
+
+                    <div class="form-group">
+                        <label for="receive-date">วันที่รับเรื่อง:</label>
+                        <input type="date" id="receive-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registration-number">ทะเบียนเลขลงรับ:</label>
+                        <input type="text" id="registration-number" placeholder="เช่น รล.001/2568" required>
+                    </div>
                     <div class="form-group">
                         <label for="complaint-name">ชื่อผู้แจ้ง:</label>
                         <input type="text" id="complaint-name" required>
@@ -33,8 +44,8 @@
                         <textarea id="complaint-address" rows="3" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="complaint-subdistrict">ตำบล:</label>
-                        <select id="complaint-subdistrict" required>
+                        <label for="complaint-district">ตำบล:</label>
+                        <select id="complaint-district" required>
                             <option value="">เลือกตำบล</option>
                             <option value="อ่างทอง">อ่างทอง</option>
                             <option value="ลิปะน้อย">ลิปะน้อย</option>
@@ -59,49 +70,60 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="complaint-details">รายละเอียดเรื่องร้องเรียน:</label>
-                        <textarea id="complaint-details" rows="5" required></textarea>
-                    </div>
-                    <div class="form-group">
                         <label for="complaint-status">สถานะ:</label>
                         <select id="complaint-status" required>
                             <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
                             <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
                         </select>
                     </div>
-                    <div class="form-group" id="operation-result-group" style="display: none;">
-                        <label for="operation-result">ผลการดำเนินการ:</label>
-                        <textarea id="operation-result" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
+                    <div class="form-group" id="responsible-group">
                         <label for="complaint-responsible">ผู้รับผิดชอบ:</label>
                         <input type="text" id="complaint-responsible" required>
                     </div>
-                    <button type="submit" class="button primary">บันทึกข้อมูล</button>
+                    <div class="form-group">
+                        <label for="complaint-details">รายละเอียดเรื่องร้องเรียน:</label>
+                        <textarea id="complaint-details" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group" id="completion-date-group" style="display: none;">
+                        <label for="completion-date">วันที่ดำเนินการแล้วเสร็จ:</label>
+                        <input type="date" id="completion-date">
+                    </div>
+                    <div class="form-group" id="completion-details-group" style="display: none;">
+                        <label for="completion-details">รายละเอียดการดำเนินการแล้วเสร็จ:</label>
+                        <textarea id="completion-details" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="button primary" id="save-complaint-button">บันทึกรายการ</button>
+                    <button type="button" class="button cancel" id="cancel-edit-button" style="display: none;">ยกเลิก</button>
                     <div id="form-message" class="form-message"></div>
                 </form>
             </section>
 
             <section class="report-section card">
-                <h2>รายงานสถานะเรื่องร้องเรียน</h2>
+                <h2>รายการเรื่องร้องเรียน</h2>
                 <div class="filter-controls">
-                    <input type="text" id="search-bar" placeholder="ค้นหา...">
-                    <select id="status-filter">
-                        <option value="ทั้งหมด">แสดงทั้งหมด</option>
-                        <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
-                        <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
-                    </select>
+                    <input type="text" id="search-bar" placeholder="ค้นหา (ทะเบียน, ตำบล, ชื่อ, สถานะ)...">
+                    <div class="status-tabs">
+                        <button class="status-tab-button active" data-status-filter="ทั้งหมด">ทั้งหมด</button>
+                        <button class="status-tab-button" data-status-filter="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</button>
+                        <button class="status-tab-button" data-status-filter="ดำเนินการแล้ว">ดำเนินการแล้ว</button>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table id="complaint-table">
                         <thead>
                             <tr>
-                                <th>วันที่แจ้ง</th>
-                                <th>ชื่อผู้แจ้ง</th>
+                                <th>id</th>
+                                <th>วันที่รับเรื่อง</th>
+                                <th>ทะเบียนเลขลงรับ</th>
+                                <th>ชื่อ</th>
                                 <th>ตำบล</th>
+                                <th>เบอร์โทร</th>
                                 <th>ฝ่ายรับผิดชอบ</th>
                                 <th>สถานะ</th>
                                 <th>ผู้รับผิดชอบ</th>
+                                <th>รายละเอียดเรื่องร้องเรียน</th>
+                                <th>วันที่ดำเนินการแล้วเสร็จ</th>
+                                <th>รายละเอียดการดำเนินการแล้วเสร็จ</th>
                                 <th>การจัดการ</th>
                             </tr>
                         </thead>
@@ -114,7 +136,7 @@
 
         <div id="statistics" class="tab-content">
             <section class="stats-summary card">
-                <h2>สถิติการดำเนินการ</h2>
+                <h2>สรุปผลสถิติ</h2>
                 <div class="stat-boxes">
                     <div class="stat-box">
                         <h3>เรื่องร้องเรียนทั้งหมด</h3>
@@ -132,7 +154,7 @@
             </section>
             <section class="charts-section card">
                 <div class="chart-container">
-                    <h3>เรื่องร้องเรียนประจำเดือน</h3>
+                    <h3>เรื่องร้องเรียนประจำเดือน (12 เดือนล่าสุด)</h3>
                     <canvas id="monthly-complaint-chart"></canvas>
                 </div>
                 <div class="chart-container">
@@ -144,66 +166,8 @@
     </main>
 
     <footer>
-        <p>©2025 ระบบบริหารจัดการงานกองช่างสุขาภิบาล โดย นายธีรศักดิ์ พูลเขาล้าน</p>
+        <p>©2025 ระบบจัดการเรื่องร้องเรียน กองช่างสุขาภิบาล โดย นายธีรศักดิ์ พูลเขาล้าน</p>
     </footer>
-
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>รายละเอียดเรื่องร้องเรียน</h2>
-            <form id="modal-form">
-                <input type="hidden" id="modal-id">
-                <div class="form-group">
-                    <label>วันที่แจ้ง:</label>
-                    <input type="text" id="modal-date" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="modal-name">ชื่อผู้แจ้ง:</label>
-                    <input type="text" id="modal-name" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="modal-address">ที่อยู่:</label>
-                    <textarea id="modal-address" rows="3" readonly></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="modal-subdistrict">ตำบล:</label>
-                    <input type="text" id="modal-subdistrict" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="modal-phone">เบอร์โทรศัพท์:</label>
-                    <input type="tel" id="modal-phone" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="modal-department">ฝ่ายรับผิดชอบ:</label>
-                    <input type="text" id="modal-department" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="modal-details">รายละเอียดเรื่องร้องเรียน:</label>
-                    <textarea id="modal-details" rows="5" readonly></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="modal-status">สถานะ:</label>
-                    <select id="modal-status">
-                        <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
-                        <option value="ดำเนินการแล้ว">ดำเนินการแล้ว</option>
-                    </select>
-                </div>
-                <div class="form-group" id="modal-operation-result-group" style="display: none;">
-                    <label for="modal-operation-result">ผลการดำเนินการ:</label>
-                    <textarea id="modal-operation-result" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="modal-responsible">ผู้รับผิดชอบ:</label>
-                    <input type="text" id="modal-responsible">
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="button secondary" id="edit-button">แก้ไข</button>
-                    <button type="submit" class="button primary" id="save-button" style="display: none;">บันทึก</button>
-                    <button type="button" class="button cancel" id="cancel-edit-button" style="display: none;">ยกเลิก</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <div id="notification" class="notification"></div>
 
